@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora Didáctica: Colisión 1D + Fricción</title>
+  <link rel="stylesheet" href="animacion.css">
+</head>
+<body>
+  <div class="card">
+    <h1>🏗️ Calculadora de Colisión en 1D con Fricción</h1>
+    
+    <div class="subtitle">
+      Resuelve problemas de colisiones elásticas e inelásticas entre dos bloques que luego se deslizan con fricción hasta detenerse.
+    </div>
+    
+    <div class="scenario">
+      <strong>📋 Escenario típico:</strong> Dos bloques (A y B) se mueven sobre una superficie horizontal. El bloque A choca con el bloque B (inicialmente en reposo o en movimiento). Después del choque, ambos bloques se deslizan con fricción hasta detenerse. Calculamos las velocidades después del choque y las distancias recorridas.
+    </div>
+    
+    <h2 class="section-title">🌍 Sistema de Unidades</h2>
+    
+    <div class="unit-toggle-container">
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="si-btn" onclick="switchToSI()">Sistema Internacional</button>
+        <button class="unit-btn" id="english-btn" onclick="switchToEnglish()">Sistema Inglés</button>
+      </div>
+      <div class="unit-info" id="unit-info">
+        Unidades: kg, m/s, m, m/s². Presiona calcular para ver conversiones.
+      </div>
+    </div>
+    
+    <h2 class="section-title">📊 Datos del Problema</h2>
+    
+    <div class="input-group">
+      <div class="input-field">
+        <label for="mA">Masa del bloque A (m<sub>A</sub>) <span class="unit-label" id="mass-unit">kg</span></label>
+        <input id="mA" type="number" step="any" value="3" min="0.1">
+        <div class="hint">Masa del primer bloque</div>
+      </div>
+      
+      <div class="input-field">
+        <label for="vA">Velocidad inicial de A (v<sub>A</sub>) <span class="unit-label" id="velocity-unit">m/s</span></label>
+        <input id="vA" type="number" step="any" value="2">
+        <div class="hint">Positiva → derecha, Negativa ← izquierda</div>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <div class="input-field">
+        <label for="mB">Masa del bloque B (m<sub>B</sub>) <span class="unit-label" id="mass-unit-b">kg</span></label>
+        <input id="mB" type="number" step="any" value="2" min="0.1">
+        <div class="hint">Masa del segundo bloque</div>
+      </div>
+      
+      <div class="input-field">
+        <label for="vB">Velocidad inicial de B (v<sub>B</sub>) <span class="unit-label" id="velocity-unit-b">m/s</span></label>
+        <input id="vB" type="number" step="any" value="0">
+        <div class="hint">Positiva → derecha, Negativa ← izquierda</div>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <div class="input-field">
+        <label for="e">Coeficiente de restitución (e)</label>
+        <input id="e" type="number" step="any" min="0" max="1" value="1">
+        <div class="hint">0 = choque perfectamente inelástico, 1 = choque perfectamente elástico</div>
+      </div>
+      
+      <div class="input-field">
+        <label for="mu">Coeficiente de fricción (μ)</label>
+        <input id="mu" type="number" step="any" value="0.3" min="0">
+        <div class="hint">Fricción entre los bloques y la superficie</div>
+      </div>
+      
+      <div class="input-field">
+        <label for="g">Gravedad (g) <span class="unit-label" id="gravity-unit">m/s²</span></label>
+        <input id="g" type="number" step="any" value="9.81" min="0">
+        <div class="hint">Aceleración debida a la gravedad</div>
+      </div>
+    </div>
+    
+    <div class="visualization initial-state">
+      <div class="block block-a">
+        <div class="block-label">BLOQUE A</div>
+        <div class="block-values">m<sub>A</sub> = <span id="vis-mA">3</span> <span class="unit-label" id="vis-mass-unit">kg</span></div>
+        <div class="block-values">v<sub>A</sub> = <span id="vis-vA">2</span> <span class="unit-label" id="vis-velocity-unit">m/s</span></div>
+        <div class="velocity-arrow-container" id="arrow-container-a"></div>
+      </div>
+      
+      <div class="connecting-arrow" id="connecting-arrow">
+        <div class="velocity-indicator">v<sub>rel</sub> = <span id="vis-vrel">2.00</span> <span class="unit-label">m/s</span></div>
+        <div class="arrow-line">
+          <div class="arrow-head"></div>
+        </div>
+        <div class="collision-label">COLISIÓN</div>
+      </div>
+      
+      <div class="block block-b">
+        <div class="block-label">BLOQUE B</div>
+        <div class="block-values">m<sub>B</sub> = <span id="vis-mB">2</span> <span class="unit-label" id="vis-mass-unit-b">kg</span></div>
+        <div class="block-values">v<sub>B</sub> = <span id="vis-vB">0</span> <span class="unit-label" id="vis-velocity-unit-b">m/s</span></div>
+        <div class="velocity-arrow-container" id="arrow-container-b"></div>
+      </div>
+    </div>
+    
+    <div class="buttons-container">
+      <button class="btn-primary" onclick="calcular()">
+        <span class="icon">🚀</span> Calcular Colisión y Distancias
+      </button>
+      
+      <button class="btn-secondary" onclick="ejemploProblema()">
+        <span class="icon">📖</span> Cargar Ejemplo
+      </button>
+      
+      <button class="btn-reset" onclick="resetValues()">
+        <span class="icon">🔄</span> Restablecer Valores
+      </button>
+    </div>
+    
+    <div class="results-container">
+      <div class="results-header">
+        <span class="icon">📈</span> Resultados y Explicación Paso a Paso
+      </div>
+      
+      <div class="results-content">
+        <pre id="out">Presiona "Calcular" para ver los resultados detallados del problema.</pre>
+        
+        <div class="visualization final-state" id="finalVisualization" style="display:none;">
+          <div class="block block-a" id="vis-block-a-final">
+            <div class="block-label">BLOQUE A DESPUÉS</div>
+            <div class="block-values">v<sub>A</sub>' = <span id="vis-vAprim">0</span> <span class="unit-label" id="vis-velocity-unit-aprim">m/s</span></div>
+            <div class="block-values">d<sub>A</sub> = <span id="vis-dA">0</span> <span class="unit-label" id="vis-distance-unit">m</span></div>
+          </div>
+          
+          <div class="connecting-arrow" id="final-connecting-arrow">
+            <div class="velocity-indicator">d<sub>rel</sub> = <span id="vis-drel">0.00</span> <span class="unit-label">m</span></div>
+            <div class="arrow-line">
+              <div class="arrow-head"></div>
+            </div>
+            <div class="collision-label">DISTANCIA FINAL</div>
+          </div>
+          
+          <div class="block block-b" id="vis-block-b-final">
+            <div class="block-label">BLOQUE B DESPUÉS</div>
+            <div class="block-values">v<sub>B</sub>' = <span id="vis-vBprim">0</span> <span class="unit-label" id="vis-velocity-unit-bprim">m/s</span></div>
+            <div class="block-values">d<sub>B</sub> = <span id="vis-dB">0</span> <span class="unit-label" id="vis-distance-unit-b">m</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="variables-explanation">
+      <h4>📚 Explicación de Variables y Fórmulas</h4>
+      
+      <div class="variable-item">
+        <div class="variable-name">e (0 a 1):</div>
+        <div>Coeficiente de restitución. e=1: choque elástico (se conserva energía cinética). e=0: choque perfectamente inelástico (los cuerpos quedan unidos).</div>
+      </div>
+      
+      <div class="variable-item">
+        <div class="variable-name">μ (mu):</div>
+        <div>Coeficiente de fricción cinética. Determina la fuerza de fricción que frena los bloques: F<sub>fricción</sub> = μ·m·g.</div>
+      </div>
+      
+      <div class="variable-item">
+        <div class="variable-name">Fórmulas:</div>
+        <div>
+          <div class="formula">v<sub>A</sub>' = [(m<sub>A</sub> - e·m<sub>B</sub>)·v<sub>A</sub> + (1+e)·m<sub>B</sub>·v<sub>B</sub>] / (m<sub>A</sub> + m<sub>B</sub>)</div>
+          <div class="formula">v<sub>B</sub>' = [(1+e)·m<sub>A</sub>·v<sub>A</sub> + (m<sub>B</sub> - e·m<sub>A</sub>)·v<sub>B</sub>] / (m<sub>A</sub> + m<sub>B</sub>)</div>
+          <div class="formula">d = v² / (2·μ·g) (distancia hasta detenerse)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Variables globales para control de unidades
+let currentUnitSystem = 'SI'; // 'SI' o 'ENGLISH'
+let conversionFactors = {
+  mass: {
+    SI: 1, // kg
+    ENGLISH: 0.453592 // 1 lb = 0.453592 kg
+  },
+  velocity: {
+    SI: 1, // m/s
+    ENGLISH: 0.44704 // 1 mph = 0.44704 m/s
+  },
+  distance: {
+    SI: 1, // m
+    ENGLISH: 0.3048 // 1 ft = 0.3048 m
+  },
+  gravity: {
+    SI: 9.81, // m/s²
+    ENGLISH: 32.174 // ft/s²
+  }
+};
+
+// Función para determinar el color según la velocidad
+function getSpeedColor(speed) {
+  if (speed === 0) return '#cccccc';
+  if (speed < 1) return '#4CAF50';  // Verde para velocidades bajas
+  if (speed < 3) return '#FF9800';  // Naranja para velocidades medias
+  if (speed < 6) return '#FF5722';  // Naranja-rojo para velocidades altas
+  return '#F44336';  // Rojo para velocidades muy altas
+}
+
+// Función para crear flechas de velocidad
+function createVelocityArrow(speed, direction) {
+  const arrowSize = Math.min(Math.max(Math.abs(speed) * 10, 15), 80);
+  const arrowColor = getSpeedColor(Math.abs(speed));
+  
+  const arrow = document.createElement('div');
+  arrow.className = `velocity-arrow ${direction}`;
+  
+  if (direction === 'right') {
+    arrow.style.borderLeftWidth = `${arrowSize}px`;
+    arrow.style.borderTopWidth = `${arrowSize/3}px`;
+    arrow.style.borderBottomWidth = `${arrowSize/3}px`;
+    arrow.style.borderLeftColor = arrowColor;
+    arrow.style.borderTopColor = 'transparent';
+    arrow.style.borderBottomColor = 'transparent';
+  } else {
+    arrow.style.borderRightWidth = `${arrowSize}px`;
+    arrow.style.borderTopWidth = `${arrowSize/3}px`;
+    arrow.style.borderBottomWidth = `${arrowSize/3}px`;
+    arrow.style.borderRightColor = arrowColor;
+    arrow.style.borderTopColor = 'transparent';
+    arrow.style.borderBottomColor = 'transparent';
+  }
+  
+  // Agregar animación de pulso
+  arrow.style.animation = `pulse ${Math.max(1.5, 3 - Math.abs(speed)/2)}s infinite`;
+  
+  return arrow;
+}
+
+// Función para actualizar flechas de velocidad
+function updateVelocityArrows() {
+  const vA = parseFloat(document.getElementById('vA').value) || 0;
+  const vB = parseFloat(document.getElementById('vB').value) || 0;
+  
+  // Convertir si es necesario
+  let displayVA = vA;
+  let displayVB = vB;
+  
+  if (currentUnitSystem === 'ENGLISH') {
+    displayVA = vA / conversionFactors.velocity.ENGLISH;
+    displayVB = vB / conversionFactors.velocity.ENGLISH;
+  }
+  
+  // Actualizar flecha del bloque A
+  const arrowContainerA = document.getElementById('arrow-container-a');
+  arrowContainerA.innerHTML = '';
+  
+  if (displayVA !== 0) {
+    const direction = displayVA > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVA), direction);
+    arrowContainerA.appendChild(arrow);
+    
+    // Agregar etiqueta de velocidad
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = `${Math.abs(displayVA).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVA));
+    arrowContainerA.appendChild(label);
+  } else {
+    // Mostrar indicador de reposo
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = 'En reposo';
+    label.style.color = '#666';
+    arrowContainerA.appendChild(label);
+  }
+  
+  // Actualizar flecha del bloque B
+  const arrowContainerB = document.getElementById('arrow-container-b');
+  arrowContainerB.innerHTML = '';
+  
+  if (displayVB !== 0) {
+    const direction = displayVB > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVB), direction);
+    arrowContainerB.appendChild(arrow);
+    
+    // Agregar etiqueta de velocidad
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = `${Math.abs(displayVB).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVB));
+    arrowContainerB.appendChild(label);
+  } else {
+    // Mostrar indicador de reposo
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = 'En reposo';
+    label.style.color = '#666';
+    arrowContainerB.appendChild(label);
+  }
+  
+  // Actualizar flecha de velocidad relativa
+  const vRel = Math.abs(displayVA - displayVB);
+  const vrelElement = document.getElementById('vis-vrel');
+  if (vrelElement) {
+    vrelElement.textContent = vRel.toFixed(2);
+  }
+  
+  // Actualizar tamaño y color de flecha de conexión
+  const arrowLine = document.querySelector('.arrow-line');
+  const arrowHead = document.querySelector('.arrow-head');
+  
+  if (arrowLine && arrowHead) {
+    const lineWidth = Math.min(Math.max(vRel * 20, 50), 200);
+    arrowLine.style.width = `${lineWidth}px`;
+    arrowLine.style.backgroundColor = getSpeedColor(vRel);
+    arrowHead.style.borderLeftColor = getSpeedColor(vRel);
+  }
+}
+
+// Función para actualizar flechas finales
+function updateFinalArrows(vAprim, vBprim, dA, dB) {
+  // Convertir si es necesario
+  let displayVAprim = vAprim;
+  let displayVBprim = vBprim;
+  let displayDA = dA;
+  let displayDB = dB;
+  
+  if (currentUnitSystem === 'ENGLISH') {
+    displayVAprim = vAprim / conversionFactors.velocity.ENGLISH;
+    displayVBprim = vBprim / conversionFactors.velocity.ENGLISH;
+    displayDA = dA / conversionFactors.distance.ENGLISH;
+    displayDB = dB / conversionFactors.distance.ENGLISH;
+  }
+  
+  // Actualizar valores en los bloques
+  document.getElementById('vis-vAprim').textContent = displayVAprim.toFixed(3);
+  document.getElementById('vis-vBprim').textContent = displayVBprim.toFixed(3);
+  document.getElementById('vis-dA').textContent = displayDA.toFixed(3);
+  document.getElementById('vis-dB').textContent = displayDB.toFixed(3);
+  
+  // Crear contenedores de flechas finales si no existen
+  let arrowFinalA = document.getElementById('arrow-final-a');
+  let arrowFinalB = document.getElementById('arrow-final-b');
+  
+  // Limpiar contenedores existentes
+  const blockA = document.getElementById('vis-block-a-final');
+  const blockB = document.getElementById('vis-block-b-final');
+  
+  // Eliminar contenedores anteriores si existen
+  if (arrowFinalA) arrowFinalA.remove();
+  if (arrowFinalB) arrowFinalB.remove();
+  
+  // Crear nuevos contenedores
+  arrowFinalA = document.createElement('div');
+  arrowFinalA.id = 'arrow-final-a';
+  arrowFinalA.className = 'final-arrow-container';
+  blockA.appendChild(arrowFinalA);
+  
+  arrowFinalB = document.createElement('div');
+  arrowFinalB.id = 'arrow-final-b';
+  arrowFinalB.className = 'final-arrow-container';
+  blockB.appendChild(arrowFinalB);
+  
+  // Actualizar flecha A final
+  arrowFinalA.innerHTML = '';
+  if (Math.abs(displayVAprim) > 0.001) {
+    const direction = displayVAprim > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVAprim), direction);
+    arrowFinalA.appendChild(arrow);
+    
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = `${Math.abs(displayVAprim).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVAprim));
+    arrowFinalA.appendChild(label);
+  } else {
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = 'Detenido';
+    label.style.color = '#666';
+    arrowFinalA.appendChild(label);
+  }
+  
+  // Actualizar flecha B final
+  arrowFinalB.innerHTML = '';
+  if (Math.abs(displayVBprim) > 0.001) {
+    const direction = displayVBprim > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVBprim), direction);
+    arrowFinalB.appendChild(arrow);
+    
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = `${Math.abs(displayVBprim).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVBprim));
+    arrowFinalB.appendChild(label);
+  } else {
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = 'Detenido';
+    label.style.color = '#666';
+    arrowFinalB.appendChild(label);
+  }
+  
+  // Actualizar distancia relativa en flecha de conexión final
+  const distFinal = Math.abs(displayDB - displayDA);
+  const drelElement = document.getElementById('vis-drel');
+  if (drelElement) {
+    drelElement.textContent = distFinal.toFixed(2);
+    
+    // Actualizar flecha de distancia final
+    const finalArrowLine = document.querySelector('#final-connecting-arrow .arrow-line');
+    const finalArrowHead = document.querySelector('#final-connecting-arrow .arrow-head');
+    
+    if (finalArrowLine && finalArrowHead) {
+      const lineWidth = Math.min(Math.max(distFinal * 5, 50), 200);
+      finalArrowLine.style.width = `${lineWidth}px`;
+      finalArrowLine.style.backgroundColor = getSpeedColor(distFinal/2);
+      finalArrowHead.style.borderLeftColor = getSpeedColor(distFinal/2);
+    }
+  }
+}
+
+// Actualizar visualización de valores iniciales
+function updateInitialVisualization() {
+  document.getElementById('vis-mA').textContent = document.getElementById('mA').value;
+  document.getElementById('vis-vA').textContent = document.getElementById('vA').value;
+  document.getElementById('vis-mB').textContent = document.getElementById('mB').value;
+  document.getElementById('vis-vB').textContent = document.getElementById('vB').value;
+  
+  // Actualizar unidades
+  updateUnitLabels();
+  
+  // Actualizar flechas
+  updateVelocityArrows();
+}
+
+// Actualizar etiquetas de unidades en toda la interfaz
+function updateUnitLabels() {
+  const massUnit = currentUnitSystem === 'SI' ? 'kg' : 'lb';
+  const velocityUnit = currentUnitSystem === 'SI' ? 'm/s' : 'mph';
+  const distanceUnit = currentUnitSystem === 'SI' ? 'm' : 'ft';
+  const gravityUnit = currentUnitSystem === 'SI' ? 'm/s²' : 'ft/s²';
+  
+  // Actualizar etiquetas en formularios
+  document.getElementById('mass-unit').textContent = massUnit;
+  document.getElementById('mass-unit-b').textContent = massUnit;
+  document.getElementById('velocity-unit').textContent = velocityUnit;
+  document.getElementById('velocity-unit-b').textContent = velocityUnit;
+  document.getElementById('gravity-unit').textContent = gravityUnit;
+  
+  // Actualizar etiquetas en visualización inicial
+  document.getElementById('vis-mass-unit').textContent = massUnit;
+  document.getElementById('vis-mass-unit-b').textContent = massUnit;
+  document.getElementById('vis-velocity-unit').textContent = velocityUnit;
+  document.getElementById('vis-velocity-unit-b').textContent = velocityUnit;
+  
+  // Actualizar etiquetas en visualización final
+  document.getElementById('vis-velocity-unit-aprim').textContent = velocityUnit;
+  document.getElementById('vis-velocity-unit-bprim').textContent = velocityUnit;
+  document.getElementById('vis-distance-unit').textContent = distanceUnit;
+  document.getElementById('vis-distance-unit-b').textContent = distanceUnit;
+  
+  // Actualizar etiquetas en flechas
+  const vrelUnit = document.querySelector('#vis-vrel + .unit-label');
+  if (vrelUnit) {
+    vrelUnit.textContent = velocityUnit;
+  }
+  
+  const drelUnit = document.querySelector('#vis-drel + .unit-label');
+  if (drelUnit) {
+    drelUnit.textContent = distanceUnit;
+  }
+  
+  // Actualizar información de unidades
+  const unitInfo = document.getElementById('unit-info');
+  if (currentUnitSystem === 'SI') {
+    unitInfo.textContent = 'Unidades: kg (masa), m/s (velocidad), m (distancia), m/s² (gravedad)';
+  } else {
+    unitInfo.textContent = 'Unidades: lb (masa), mph (velocidad), ft (distancia), ft/s² (gravedad)';
+  }
+}
+
+// Cambiar a sistema SI
+function switchToSI() {
+  if (currentUnitSystem === 'ENGLISH') {
+    // Convertir valores de inglés a SI
+    document.getElementById('mA').value = (parseFloat(document.getElementById('mA').value) * conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('mB').value = (parseFloat(document.getElementById('mB').value) * conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('vA').value = (parseFloat(document.getElementById('vA').value) * conversionFactors.velocity.ENGLISH).toFixed(3);
+    document.getElementById('vB').value = (parseFloat(document.getElementById('vB').value) * conversionFactors.velocity.ENGLISH).toFixed(3);
+    document.getElementById('g').value = conversionFactors.gravity.SI.toFixed(2);
+  }
+  
+  currentUnitSystem = 'SI';
+  document.getElementById('si-btn').classList.add('active');
+  document.getElementById('english-btn').classList.remove('active');
+  
+  updateUnitLabels();
+  updateInitialVisualization();
+}
+
+// Cambiar a sistema inglés
+function switchToEnglish() {
+  if (currentUnitSystem === 'SI') {
+    // Convertir valores de SI a inglés
+    document.getElementById('mA').value = (parseFloat(document.getElementById('mA').value) / conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('mB').value = (parseFloat(document.getElementById('mB').value) / conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('vA').value = (parseFloat(document.getElementById('vA').value) / conversionFactors.velocity.ENGLISH).toFixed(3);
+    document.getElementById('vB').value = (parseFloat(document.getElementById('vB').value) / conversionFactors.velocity.ENGLISH).toFixed(3);
+    document.getElementById('g').value = conversionFactors.gravity.ENGLISH.toFixed(3);
+  }
+  
+  currentUnitSystem = 'ENGLISH';
+  document.getElementById('english-btn').classList.add('active');
+  document.getElementById('si-btn').classList.remove('active');
+  
+  updateUnitLabels();
+  updateInitialVisualization();
+}
+
+function calcular() {
+  // Actualizar visualización inicial
+  updateInitialVisualization();
+  
+  // Leer datos y convertir a SI para cálculos
+  let mA = parseFloat(document.getElementById('mA').value);
+  let vA = parseFloat(document.getElementById('vA').value);
+  let mB = parseFloat(document.getElementById('mB').value);
+  let vB = parseFloat(document.getElementById('vB').value);
+  const e  = parseFloat(document.getElementById('e').value);
+  const mu = parseFloat(document.getElementById('mu').value);
+  let g  = parseFloat(document.getElementById('g').value);
+  
+  // Convertir a SI si estamos en sistema inglés
+  if (currentUnitSystem === 'ENGLISH') {
+    mA = mA * conversionFactors.mass.ENGLISH;
+    mB = mB * conversionFactors.mass.ENGLISH;
+    vA = vA * conversionFactors.velocity.ENGLISH;
+    vB = vB * conversionFactors.velocity.ENGLISH;
+    g = conversionFactors.gravity.SI; // Siempre usar 9.81 m/s² para cálculos
+  }
+
+  const out = document.getElementById('out');
+
+  // Validaciones básicas
+  if (isNaN(mA) || isNaN(mB) || isNaN(vA) || isNaN(vB) || isNaN(e) || isNaN(mu) || isNaN(g)) {
+    out.textContent = '❌ Por favor ingresa todos los valores numéricos.';
+    return;
+  }
+  
+  if (mA <= 0 || mB <= 0) { 
+    out.textContent = '❌ Las masas deben ser positivas.';
+    return; 
+  }
+  
+  if (mu < 0) { 
+    out.textContent = '❌ μ no puede ser negativo.';
+    return; 
+  }
+  
+  if (e < 0 || e > 1) { 
+    out.textContent = '❌ e debe estar entre 0 y 1.';
+    return; 
+  }
+
+  // Fórmulas para colisión 1D con coef. restitución e
+  const denom = mA + mB;
+  const vAprim = ((mA - e * mB) / denom) * vA + ((1 + e) * mB / denom) * vB;
+  const vBprim = ((1 + e) * mA / denom) * vA + ((mB - e * mA) / denom) * vB;
+
+  // Distancias hasta detenerse debido a fricción cinética
+  function distanciaHastaParar(v) {
+    const vel = Math.abs(v);
+    if (vel === 0 || mu === 0) return mu === 0 ? Infinity : 0;
+    return (vel * vel) / (2 * mu * g);
+  }
+
+  const dA = distanciaHastaParar(vAprim);
+  const dB = distanciaHastaParar(vBprim);
+
+  // Distancia relativa entre los bloques cuando se detienen
+  let distFinal;
+  if (!isFinite(dA) || !isFinite(dB)) {
+    distFinal = Infinity;
+  } else {
+    distFinal = Math.abs(dB - dA);
+  }
+
+  // Convertir valores a inglés para mostrar si es necesario
+  const mA_display = currentUnitSystem === 'SI' ? mA : mA / conversionFactors.mass.ENGLISH;
+  const mB_display = currentUnitSystem === 'SI' ? mB : mB / conversionFactors.mass.ENGLISH;
+  const vA_display = currentUnitSystem === 'SI' ? vA : vA / conversionFactors.velocity.ENGLISH;
+  const vB_display = currentUnitSystem === 'SI' ? vB : vB / conversionFactors.velocity.ENGLISH;
+  const g_display = currentUnitSystem === 'SI' ? g : conversionFactors.gravity.ENGLISH;
+  
+  const vAprim_display = currentUnitSystem === 'SI' ? vAprim : vAprim / conversionFactors.velocity.ENGLISH;
+  const vBprim_display = currentUnitSystem === 'SI' ? vBprim : vBprim / conversionFactors.velocity.ENGLISH;
+  const dA_display = currentUnitSystem === 'SI' ? dA : dA / conversionFactors.distance.ENGLISH;
+  const dB_display = currentUnitSystem === 'SI' ? dB : dB / conversionFactors.distance.ENGLISH;
+  const distFinal_display = currentUnitSystem === 'SI' ? distFinal : distFinal / conversionFactors.distance.ENGLISH;
+
+  // Mostrar resultado con pasos
+  let text = '';
+  text += '══════════════════════════════════════════════════\n';
+  text += '          CÁLCULO DE COLISIÓN 1D + FRICCIÓN\n';
+  text += '══════════════════════════════════════════════════\n\n';
+  
+  text += `🌍 SISTEMA DE UNIDADES: ${currentUnitSystem === 'SI' ? 'SISTEMA INTERNACIONAL (SI)' : 'SISTEMA INGLÉS'}\n\n`;
+  
+  text += '📋 DATOS INICIALES:\n';
+  text += `   Bloque A: m = ${mA_display.toFixed(3)} ${currentUnitSystem === 'SI' ? 'kg' : 'lb'}, v = ${vA_display.toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  text += `   Bloque B: m = ${mB_display.toFixed(3)} ${currentUnitSystem === 'SI' ? 'kg' : 'lb'}, v = ${vB_display.toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  text += `   Coeficiente de restitución: e = ${e}\n`;
+  text += `   Coeficiente de fricción: μ = ${mu}\n`;
+  text += `   Gravedad: g = ${g_display.toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s²' : 'ft/s²'}\n\n`;
+  
+  // Mostrar conversiones si es necesario
+  if (currentUnitSystem === 'ENGLISH') {
+    text += '🔀 VALORES CONVERTIDOS A SI PARA CÁLCULOS:\n';
+    text += `   Bloque A: m = ${mA.toFixed(3)} kg, v = ${vA.toFixed(3)} m/s\n`;
+    text += `   Bloque B: m = ${mB.toFixed(3)} kg, v = ${vB.toFixed(3)} m/s\n`;
+    text += `   Gravedad: g = ${g.toFixed(3)} m/s²\n\n`;
+  }
+  
+  text += '══════════════════════════════════════════════════\n';
+  text += '📝 PASO 1: CÁLCULO DE VELOCIDADES DESPUÉS DEL CHOQUE\n\n';
+  
+  text += 'Fórmulas utilizadas:\n';
+  text += '   vA\' = [(mA - e·mB)·vA + (1+e)·mB·vB] / (mA + mB)\n';
+  text += '   vB\' = [(1+e)·mA·vA + (mB - e·mA)·vB] / (mA + mB)\n\n';
+  
+  text += 'Sustituyendo valores:\n';
+  text += `   Denominador: mA + mB = ${mA.toFixed(3)} + ${mB.toFixed(3)} = ${denom.toFixed(3)}\n`;
+  text += `   vA\' = [(${mA.toFixed(3)} - ${e}·${mB.toFixed(3)})·${vA.toFixed(3)} + (1+${e})·${mB.toFixed(3)}·${vB.toFixed(3)}] / ${denom.toFixed(3)}\n`;
+  text += `        = ${vAprim.toFixed(6)} m/s\n\n`;
+  text += `   vB\' = [(1+${e})·${mA.toFixed(3)}·${vA.toFixed(3)} + (${mB.toFixed(3)} - ${e}·${mA.toFixed(3)})·${vB.toFixed(3)}] / ${denom.toFixed(3)}\n`;
+  text += `        = ${vBprim.toFixed(6)} m/s\n\n`;
+  
+  // Mostrar resultados en unidades actuales
+  text += '📊 RESULTADOS EN UNIDADES ACTUALES:\n';
+  if (vAprim_display > 0.001) {
+    text += `   • Bloque A se mueve hacia la DERECHA a ${Math.abs(vAprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  } else if (vAprim_display < -0.001) {
+    text += `   • Bloque A se mueve hacia la IZQUIERDA a ${Math.abs(vAprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  } else {
+    text += `   • Bloque A se DETIENE inmediatamente después del choque\n`;
+  }
+  
+  if (vBprim_display > 0.001) {
+    text += `   • Bloque B se mueve hacia la DERECHA a ${Math.abs(vBprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  } else if (vBprim_display < -0.001) {
+    text += `   • Bloque B se mueve hacia la IZQUIERDA a ${Math.abs(vBprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
+  } else {
+    text += `   • Bloque B se DETIENE inmediatamente después del choque\n`;
+  }
+  
+  text += '\n══════════════════════════════════════════════════\n';
+  text += '📝 PASO 2: DISTANCIA RECORRIDA HASTA DETENERSE POR FRICCIÓN\n\n';
+  
+  text += 'Fórmula: d = v² / (2·μ·g)\n\n';
+  
+  if (mu === 0) {
+    text += '⚠️  Como μ = 0, NO HAY FRICCIÓN:\n';
+    text += '   • Los bloques no se detendrán por fricción\n';
+    text += '   • Continuarán moviéndose indefinidamente\n';
+  } else {
+    text += `Para el bloque A (${currentUnitSystem === 'SI' ? 'metros' : 'pies'}):\n`;
+    if (Math.abs(vAprim) < 0.001) {
+      text += `   • vA\' ≈ 0 → el bloque A ya está detenido\n`;
+      text += `   • Distancia dA = 0 ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
+    } else {
+      text += `   • dA = (${Math.abs(vAprim).toFixed(3)} m/s)² / (2·${mu}·${g.toFixed(3)} m/s²)\n`;
+      text += `        = ${dA.toFixed(6)} m = ${dA_display.toFixed(6)} ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
+    }
+    
+    text += `\nPara el bloque B (${currentUnitSystem === 'SI' ? 'metros' : 'pies'}):\n`;
+    if (Math.abs(vBprim) < 0.001) {
+      text += `   • vB\' ≈ 0 → el bloque B ya está detenido\n`;
+      text += `   • Distancia dB = 0 ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
+    } else {
+      text += `   • dB = (${Math.abs(vBprim).toFixed(3)} m/s)² / (2·${mu}·${g.toFixed(3)} m/s²)\n`;
+      text += `        = ${dB.toFixed(6)} m = ${dB_display.toFixed(6)} ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
+    }
+    
+    text += '\n══════════════════════════════════════════════════\n';
+    text += '📝 PASO 3: DISTANCIA ENTRE BLOQUES CUANDO SE DETIENEN\n\n';
+    
+    text += 'Asumiendo que justo después del choque están en contacto:\n';
+    if (!isFinite(distFinal)) {
+      text += '   Distancia final = ∞ (al menos uno no se detiene)\n';
+    } else {
+      text += `   Distancia final = |dB - dA| = |${dB_display.toFixed(3)} - ${dA_display.toFixed(3)}|\n`;
+      text += `                      = ${distFinal_display.toFixed(6)} ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
+    }
+  }
+  
+  // Mostrar conversiones entre sistemas
+  text += '\n══════════════════════════════════════════════════\n';
+  text += '🔄 CONVERSIONES ENTRE SISTEMAS DE UNIDADES:\n\n';
+  
+  if (currentUnitSystem === 'SI') {
+    text += '• Para convertir a sistema inglés:\n';
+    text += `   - Masa: 1 kg = ${(1/conversionFactors.mass.ENGLISH).toFixed(4)} lb\n`;
+    text += `   - Velocidad: 1 m/s = ${(1/conversionFactors.velocity.ENGLISH).toFixed(4)} mph\n`;
+    text += `   - Distancia: 1 m = ${(1/conversionFactors.distance.ENGLISH).toFixed(4)} ft\n`;
+    text += `   - Gravedad: 9.81 m/s² = 32.174 ft/s²\n`;
+  } else {
+    text += '• Para convertir a sistema internacional (SI):\n';
+    text += `   - Masa: 1 lb = ${conversionFactors.mass.ENGLISH.toFixed(4)} kg\n`;
+    text += `   - Velocidad: 1 mph = ${conversionFactors.velocity.ENGLISH.toFixed(4)} m/s\n`;
+    text += `   - Distancia: 1 ft = ${conversionFactors.distance.ENGLISH.toFixed(4)} m\n`;
+    text += `   - Gravedad: 32.174 ft/s² = 9.81 m/s²\n`;
+  }
+  
+  text += '\n══════════════════════════════════════════════════\n';
+  text += '💡 INFORMACIÓN ADICIONAL:\n\n';
+  
+  text += '• Si una velocidad es negativa, el bloque se mueve hacia la izquierda.\n';
+  text += '• La distancia calculada siempre es positiva (se usa el valor absoluto de v).\n';
+  text += '• Si μ = 0, no hay fricción y los bloques se mueven indefinidamente.\n';
+  text += '• Este cálculo asume que los bloques no vuelven a chocar después.\n';
+  
+  if (e === 1) {
+    text += '• Como e = 1, el choque es PERFECTAMENTE ELÁSTICO.\n';
+  } else if (e === 0) {
+    text += '• Como e = 0, el choque es PERFECTAMENTE INELÁSTICO.\n';
+  } else {
+    text += `• Como e = ${e}, el choque es PARCIALMENTE ELÁSTICO.\n`;
+  }
+  
+  out.textContent = text;
+  
+  // Actualizar visualización final y flechas
+  updateFinalArrows(vAprim, vBprim, dA, dB);
+  
+  // Mostrar la visualización final
+  document.getElementById('finalVisualization').style.display = 'flex';
+}
+
+function ejemploProblema() {
+  // Carga los valores del enunciado de ejemplo en el sistema actual
+  if (currentUnitSystem === 'SI') {
+    document.getElementById('mA').value = 3;
+    document.getElementById('vA').value = 2;
+    document.getElementById('mB').value = 2;
+    document.getElementById('vB').value = 0;
+    document.getElementById('e').value = 1;
+    document.getElementById('mu').value = 0.3;
+    document.getElementById('g').value = 9.81;
+  } else {
+    // Valores equivalentes en sistema inglés
+    document.getElementById('mA').value = (3 / conversionFactors.mass.ENGLISH).toFixed(3); // ~6.614 lb
+    document.getElementById('vA').value = (2 / conversionFactors.velocity.ENGLISH).toFixed(3); // ~4.474 mph
+    document.getElementById('mB').value = (2 / conversionFactors.mass.ENGLISH).toFixed(3); // ~4.409 lb
+    document.getElementById('vB').value = 0;
+    document.getElementById('e').value = 1;
+    document.getElementById('mu').value = 0.3;
+    document.getElementById('g').value = conversionFactors.gravity.ENGLISH.toFixed(3); // 32.174 ft/s²
+  }
+  
+  // Actualizar visualización y calcular
+  updateInitialVisualization();
+  calcular();
+}
+
+function resetValues() {
+  // Restablecer a valores por defecto según el sistema actual
+  if (currentUnitSystem === 'SI') {
+    document.getElementById('mA').value = 3;
+    document.getElementById('vA').value = 2;
+    document.getElementById('mB').value = 2;
+    document.getElementById('vB').value = 0;
+    document.getElementById('e').value = 1;
+    document.getElementById('mu').value = 0.3;
+    document.getElementById('g').value = 9.81;
+  } else {
+    document.getElementById('mA').value = (3 / conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('vA').value = (2 / conversionFactors.velocity.ENGLISH).toFixed(3);
+    document.getElementById('mB').value = (2 / conversionFactors.mass.ENGLISH).toFixed(3);
+    document.getElementById('vB').value = 0;
+    document.getElementById('e').value = 1;
+    document.getElementById('mu').value = 0.3;
+    document.getElementById('g').value = conversionFactors.gravity.ENGLISH.toFixed(3);
+  }
+  
+  // Actualizar visualización
+  updateInitialVisualization();
+  
+  // Limpiar resultados
+  document.getElementById('out').textContent = 'Presiona "Calcular" para ver los resultados detallados del problema.';
+  document.getElementById('finalVisualization').style.display = 'none';
+}
+
+// Inicializar la visualización
+document.addEventListener('DOMContentLoaded', function() {
+  updateUnitLabels();
+  updateInitialVisualization();
+  
+  // Actualizar visualización cuando cambian los valores
+  const inputs = document.querySelectorAll('input[type="number"]');
+  inputs.forEach(input => {
+    input.addEventListener('input', function() {
+      updateInitialVisualization();
+      
+      // Actualizar velocidad relativa en tiempo real
+      const vA = parseFloat(document.getElementById('vA').value) || 0;
+      const vB = parseFloat(document.getElementById('vB').value) || 0;
+      let vRel = Math.abs(vA - vB);
+      
+      if (currentUnitSystem === 'ENGLISH') {
+        vRel = vRel / conversionFactors.velocity.ENGLISH;
+      }
+      
+      const vrelElement = document.getElementById('vis-vrel');
+      if (vrelElement) {
+        vrelElement.textContent = vRel.toFixed(2);
+        
+        // Actualizar flecha de conexión en tiempo real
+        const arrowLine = document.querySelector('.arrow-line');
+        const arrowHead = document.querySelector('.arrow-head');
+        
+        if (arrowLine && arrowHead) {
+          const lineWidth = Math.min(Math.max(vRel * 20, 50), 200);
+          arrowLine.style.width = `${lineWidth}px`;
+          arrowLine.style.backgroundColor = getSpeedColor(vRel);
+          arrowHead.style.borderLeftColor = getSpeedColor(vRel);
+        }
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
