@@ -278,7 +278,7 @@
       text-align: center;
       color: white;
       font-weight: 600;
-      min-width: 120px;
+      min-width: 150px;
       position: relative;
     }
     
@@ -299,43 +299,125 @@
       font-size: 1.1em;
     }
     
-    .arrow {
-      font-size: 24px;
-      color: #f57c00;
-      margin: 0 15px;
+    /* Nuevos estilos para flechas dinámicas */
+    .velocity-arrow {
+      width: 0;
+      height: 0;
+      position: relative;
+      transition: all 0.5s ease;
     }
     
-    .initial-state .block-a::after {
-      content: "→";
-      position: absolute;
-      right: -25px;
-      top: 50%;
-      transform: translateY(-50%);
+    .velocity-arrow.right {
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 30px solid #f57c00;
+    }
+    
+    .velocity-arrow.left {
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right: 30px solid #f57c00;
+    }
+    
+    .arrow-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 100px;
+      position: relative;
+    }
+    
+    .velocity-indicator {
+      font-size: 12px;
       color: #f57c00;
-      font-size: 24px;
+      font-weight: bold;
+      position: absolute;
+      top: -20px;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .connecting-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 20px;
+      min-width: 120px;
+    }
+    
+    .arrow-line {
+      height: 4px;
+      background-color: #f57c00;
+      width: 100%;
+      position: relative;
+      transition: width 0.5s ease;
+    }
+    
+    .arrow-head {
+      width: 0;
+      height: 0;
+      position: absolute;
+      right: -10px;
+      top: -8px;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 15px solid #f57c00;
+      transition: border-left-color 0.5s ease;
+    }
+    
+    .velocity-arrow-container, .final-arrow-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+      min-height: 50px;
+    }
+    
+    .velocity-label, .final-velocity-label {
+      font-size: 11px;
+      font-weight: bold;
+      margin-top: 5px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .collision-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #d32f2f;
+      margin-top: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    /* Animación para las flechas */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .velocity-arrow {
+      animation: pulse 2s infinite;
+    }
+    
+    .velocity-arrow:hover {
+      animation: none;
+      transform: scale(1.1);
+      transition: transform 0.3s;
     }
     
     .final-state .block-a, .final-state .block-b {
       position: relative;
-    }
-    
-    .final-state .block-a::after, .final-state .block-b::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 24px;
-      color: #f57c00;
-    }
-    
-    .right-arrow::after {
-      content: "→";
-      right: -25px;
-    }
-    
-    .left-arrow::after {
-      content: "←";
-      left: -25px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
     
     .warning {
@@ -371,9 +453,13 @@
         gap: 20px;
       }
       
-      .arrow {
-        transform: rotate(90deg);
+      .connecting-arrow {
         margin: 10px 0;
+      }
+      
+      .arrow-head {
+        right: -10px;
+        top: -8px;
       }
       
       .buttons-container {
@@ -478,14 +564,22 @@
         <div class="block-label">BLOQUE A</div>
         <div class="block-values">m<sub>A</sub> = <span id="vis-mA">3</span> <span class="unit-label" id="vis-mass-unit">kg</span></div>
         <div class="block-values">v<sub>A</sub> = <span id="vis-vA">2</span> <span class="unit-label" id="vis-velocity-unit">m/s</span></div>
+        <div class="velocity-arrow-container" id="arrow-container-a"></div>
       </div>
       
-      <div class="arrow">→</div>
+      <div class="connecting-arrow" id="connecting-arrow">
+        <div class="velocity-indicator">v<sub>rel</sub> = <span id="vis-vrel">2.00</span> <span class="unit-label">m/s</span></div>
+        <div class="arrow-line">
+          <div class="arrow-head"></div>
+        </div>
+        <div class="collision-label">COLISIÓN</div>
+      </div>
       
       <div class="block block-b">
         <div class="block-label">BLOQUE B</div>
         <div class="block-values">m<sub>B</sub> = <span id="vis-mB">2</span> <span class="unit-label" id="vis-mass-unit-b">kg</span></div>
         <div class="block-values">v<sub>B</sub> = <span id="vis-vB">0</span> <span class="unit-label" id="vis-velocity-unit-b">m/s</span></div>
+        <div class="velocity-arrow-container" id="arrow-container-b"></div>
       </div>
     </div>
     
@@ -518,7 +612,13 @@
             <div class="block-values">d<sub>A</sub> = <span id="vis-dA">0</span> <span class="unit-label" id="vis-distance-unit">m</span></div>
           </div>
           
-          <div class="arrow">← →</div>
+          <div class="connecting-arrow" id="final-connecting-arrow">
+            <div class="velocity-indicator">d<sub>rel</sub> = <span id="vis-drel">0.00</span> <span class="unit-label">m</span></div>
+            <div class="arrow-line">
+              <div class="arrow-head"></div>
+            </div>
+            <div class="collision-label">DISTANCIA FINAL</div>
+          </div>
           
           <div class="block block-b" id="vis-block-b-final">
             <div class="block-label">BLOQUE B DESPUÉS</div>
@@ -575,6 +675,229 @@ let conversionFactors = {
   }
 };
 
+// Función para determinar el color según la velocidad
+function getSpeedColor(speed) {
+  if (speed === 0) return '#cccccc';
+  if (speed < 1) return '#4CAF50';  // Verde para velocidades bajas
+  if (speed < 3) return '#FF9800';  // Naranja para velocidades medias
+  if (speed < 6) return '#FF5722';  // Naranja-rojo para velocidades altas
+  return '#F44336';  // Rojo para velocidades muy altas
+}
+
+// Función para crear flechas de velocidad
+function createVelocityArrow(speed, direction) {
+  const arrowSize = Math.min(Math.max(Math.abs(speed) * 10, 15), 80);
+  const arrowColor = getSpeedColor(Math.abs(speed));
+  
+  const arrow = document.createElement('div');
+  arrow.className = `velocity-arrow ${direction}`;
+  
+  if (direction === 'right') {
+    arrow.style.borderLeftWidth = `${arrowSize}px`;
+    arrow.style.borderTopWidth = `${arrowSize/3}px`;
+    arrow.style.borderBottomWidth = `${arrowSize/3}px`;
+    arrow.style.borderLeftColor = arrowColor;
+    arrow.style.borderTopColor = 'transparent';
+    arrow.style.borderBottomColor = 'transparent';
+  } else {
+    arrow.style.borderRightWidth = `${arrowSize}px`;
+    arrow.style.borderTopWidth = `${arrowSize/3}px`;
+    arrow.style.borderBottomWidth = `${arrowSize/3}px`;
+    arrow.style.borderRightColor = arrowColor;
+    arrow.style.borderTopColor = 'transparent';
+    arrow.style.borderBottomColor = 'transparent';
+  }
+  
+  // Agregar animación de pulso
+  arrow.style.animation = `pulse ${Math.max(1.5, 3 - Math.abs(speed)/2)}s infinite`;
+  
+  return arrow;
+}
+
+// Función para actualizar flechas de velocidad
+function updateVelocityArrows() {
+  const vA = parseFloat(document.getElementById('vA').value) || 0;
+  const vB = parseFloat(document.getElementById('vB').value) || 0;
+  
+  // Convertir si es necesario
+  let displayVA = vA;
+  let displayVB = vB;
+  
+  if (currentUnitSystem === 'ENGLISH') {
+    displayVA = vA / conversionFactors.velocity.ENGLISH;
+    displayVB = vB / conversionFactors.velocity.ENGLISH;
+  }
+  
+  // Actualizar flecha del bloque A
+  const arrowContainerA = document.getElementById('arrow-container-a');
+  arrowContainerA.innerHTML = '';
+  
+  if (displayVA !== 0) {
+    const direction = displayVA > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVA), direction);
+    arrowContainerA.appendChild(arrow);
+    
+    // Agregar etiqueta de velocidad
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = `${Math.abs(displayVA).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVA));
+    arrowContainerA.appendChild(label);
+  } else {
+    // Mostrar indicador de reposo
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = 'En reposo';
+    label.style.color = '#666';
+    arrowContainerA.appendChild(label);
+  }
+  
+  // Actualizar flecha del bloque B
+  const arrowContainerB = document.getElementById('arrow-container-b');
+  arrowContainerB.innerHTML = '';
+  
+  if (displayVB !== 0) {
+    const direction = displayVB > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVB), direction);
+    arrowContainerB.appendChild(arrow);
+    
+    // Agregar etiqueta de velocidad
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = `${Math.abs(displayVB).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVB));
+    arrowContainerB.appendChild(label);
+  } else {
+    // Mostrar indicador de reposo
+    const label = document.createElement('div');
+    label.className = 'velocity-label';
+    label.textContent = 'En reposo';
+    label.style.color = '#666';
+    arrowContainerB.appendChild(label);
+  }
+  
+  // Actualizar flecha de velocidad relativa
+  const vRel = Math.abs(displayVA - displayVB);
+  const vrelElement = document.getElementById('vis-vrel');
+  if (vrelElement) {
+    vrelElement.textContent = vRel.toFixed(2);
+  }
+  
+  // Actualizar tamaño y color de flecha de conexión
+  const arrowLine = document.querySelector('.arrow-line');
+  const arrowHead = document.querySelector('.arrow-head');
+  
+  if (arrowLine && arrowHead) {
+    const lineWidth = Math.min(Math.max(vRel * 20, 50), 200);
+    arrowLine.style.width = `${lineWidth}px`;
+    arrowLine.style.backgroundColor = getSpeedColor(vRel);
+    arrowHead.style.borderLeftColor = getSpeedColor(vRel);
+  }
+}
+
+// Función para actualizar flechas finales
+function updateFinalArrows(vAprim, vBprim, dA, dB) {
+  // Convertir si es necesario
+  let displayVAprim = vAprim;
+  let displayVBprim = vBprim;
+  let displayDA = dA;
+  let displayDB = dB;
+  
+  if (currentUnitSystem === 'ENGLISH') {
+    displayVAprim = vAprim / conversionFactors.velocity.ENGLISH;
+    displayVBprim = vBprim / conversionFactors.velocity.ENGLISH;
+    displayDA = dA / conversionFactors.distance.ENGLISH;
+    displayDB = dB / conversionFactors.distance.ENGLISH;
+  }
+  
+  // Actualizar valores en los bloques
+  document.getElementById('vis-vAprim').textContent = displayVAprim.toFixed(3);
+  document.getElementById('vis-vBprim').textContent = displayVBprim.toFixed(3);
+  document.getElementById('vis-dA').textContent = displayDA.toFixed(3);
+  document.getElementById('vis-dB').textContent = displayDB.toFixed(3);
+  
+  // Crear contenedores de flechas finales si no existen
+  let arrowFinalA = document.getElementById('arrow-final-a');
+  let arrowFinalB = document.getElementById('arrow-final-b');
+  
+  // Limpiar contenedores existentes
+  const blockA = document.getElementById('vis-block-a-final');
+  const blockB = document.getElementById('vis-block-b-final');
+  
+  // Eliminar contenedores anteriores si existen
+  if (arrowFinalA) arrowFinalA.remove();
+  if (arrowFinalB) arrowFinalB.remove();
+  
+  // Crear nuevos contenedores
+  arrowFinalA = document.createElement('div');
+  arrowFinalA.id = 'arrow-final-a';
+  arrowFinalA.className = 'final-arrow-container';
+  blockA.appendChild(arrowFinalA);
+  
+  arrowFinalB = document.createElement('div');
+  arrowFinalB.id = 'arrow-final-b';
+  arrowFinalB.className = 'final-arrow-container';
+  blockB.appendChild(arrowFinalB);
+  
+  // Actualizar flecha A final
+  arrowFinalA.innerHTML = '';
+  if (Math.abs(displayVAprim) > 0.001) {
+    const direction = displayVAprim > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVAprim), direction);
+    arrowFinalA.appendChild(arrow);
+    
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = `${Math.abs(displayVAprim).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVAprim));
+    arrowFinalA.appendChild(label);
+  } else {
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = 'Detenido';
+    label.style.color = '#666';
+    arrowFinalA.appendChild(label);
+  }
+  
+  // Actualizar flecha B final
+  arrowFinalB.innerHTML = '';
+  if (Math.abs(displayVBprim) > 0.001) {
+    const direction = displayVBprim > 0 ? 'right' : 'left';
+    const arrow = createVelocityArrow(Math.abs(displayVBprim), direction);
+    arrowFinalB.appendChild(arrow);
+    
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = `${Math.abs(displayVBprim).toFixed(2)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}`;
+    label.style.color = getSpeedColor(Math.abs(displayVBprim));
+    arrowFinalB.appendChild(label);
+  } else {
+    const label = document.createElement('div');
+    label.className = 'final-velocity-label';
+    label.textContent = 'Detenido';
+    label.style.color = '#666';
+    arrowFinalB.appendChild(label);
+  }
+  
+  // Actualizar distancia relativa en flecha de conexión final
+  const distFinal = Math.abs(displayDB - displayDA);
+  const drelElement = document.getElementById('vis-drel');
+  if (drelElement) {
+    drelElement.textContent = distFinal.toFixed(2);
+    
+    // Actualizar flecha de distancia final
+    const finalArrowLine = document.querySelector('#final-connecting-arrow .arrow-line');
+    const finalArrowHead = document.querySelector('#final-connecting-arrow .arrow-head');
+    
+    if (finalArrowLine && finalArrowHead) {
+      const lineWidth = Math.min(Math.max(distFinal * 5, 50), 200);
+      finalArrowLine.style.width = `${lineWidth}px`;
+      finalArrowLine.style.backgroundColor = getSpeedColor(distFinal/2);
+      finalArrowHead.style.borderLeftColor = getSpeedColor(distFinal/2);
+    }
+  }
+}
+
 // Actualizar visualización de valores iniciales
 function updateInitialVisualization() {
   document.getElementById('vis-mA').textContent = document.getElementById('mA').value;
@@ -582,8 +905,11 @@ function updateInitialVisualization() {
   document.getElementById('vis-mB').textContent = document.getElementById('mB').value;
   document.getElementById('vis-vB').textContent = document.getElementById('vB').value;
   
-  // Actualizar unidades en visualización
+  // Actualizar unidades
   updateUnitLabels();
+  
+  // Actualizar flechas
+  updateVelocityArrows();
 }
 
 // Actualizar etiquetas de unidades en toda la interfaz
@@ -611,6 +937,17 @@ function updateUnitLabels() {
   document.getElementById('vis-velocity-unit-bprim').textContent = velocityUnit;
   document.getElementById('vis-distance-unit').textContent = distanceUnit;
   document.getElementById('vis-distance-unit-b').textContent = distanceUnit;
+  
+  // Actualizar etiquetas en flechas
+  const vrelUnit = document.querySelector('#vis-vrel + .unit-label');
+  if (vrelUnit) {
+    vrelUnit.textContent = velocityUnit;
+  }
+  
+  const drelUnit = document.querySelector('#vis-drel + .unit-label');
+  if (drelUnit) {
+    drelUnit.textContent = distanceUnit;
+  }
   
   // Actualizar información de unidades
   const unitInfo = document.getElementById('unit-info');
@@ -657,55 +994,6 @@ function switchToEnglish() {
   
   updateUnitLabels();
   updateInitialVisualization();
-}
-
-// Actualizar visualización de valores finales
-function updateFinalVisualization(vAprim, vBprim, dA, dB, vAprimSI, vBprimSI, dASI, dBSI) {
-  // Mostrar valores en unidades actuales
-  const velocityUnit = currentUnitSystem === 'SI' ? 'm/s' : 'mph';
-  const distanceUnit = currentUnitSystem === 'SI' ? 'm' : 'ft';
-  
-  // Convertir valores si estamos en sistema inglés
-  let displayVAprim = vAprim;
-  let displayVBprim = vBprim;
-  let displayDA = dA;
-  let displayDB = dB;
-  
-  if (currentUnitSystem === 'ENGLISH') {
-    displayVAprim = vAprim / conversionFactors.velocity.ENGLISH;
-    displayVBprim = vBprim / conversionFactors.velocity.ENGLISH;
-    displayDA = dA / conversionFactors.distance.ENGLISH;
-    displayDB = dB / conversionFactors.distance.ENGLISH;
-  }
-  
-  document.getElementById('vis-vAprim').textContent = displayVAprim.toFixed(3);
-  document.getElementById('vis-vBprim').textContent = displayVBprim.toFixed(3);
-  document.getElementById('vis-dA').textContent = displayDA.toFixed(3);
-  document.getElementById('vis-dB').textContent = displayDB.toFixed(3);
-  
-  // Mostrar flechas de dirección
-  const blockAFinal = document.getElementById('vis-block-a-final');
-  const blockBFinal = document.getElementById('vis-block-b-final');
-  
-  // Eliminar clases de flechas previas
-  blockAFinal.classList.remove('right-arrow', 'left-arrow');
-  blockBFinal.classList.remove('right-arrow', 'left-arrow');
-  
-  // Agregar flechas según dirección
-  if (vAprim > 0) {
-    blockAFinal.classList.add('right-arrow');
-  } else if (vAprim < 0) {
-    blockAFinal.classList.add('left-arrow');
-  }
-  
-  if (vBprim > 0) {
-    blockBFinal.classList.add('right-arrow');
-  } else if (vBprim < 0) {
-    blockBFinal.classList.add('left-arrow');
-  }
-  
-  // Mostrar la visualización final
-  document.getElementById('finalVisualization').style.display = 'flex';
 }
 
 function calcular() {
@@ -828,17 +1116,17 @@ function calcular() {
   
   // Mostrar resultados en unidades actuales
   text += '📊 RESULTADOS EN UNIDADES ACTUALES:\n';
-  if (vAprim_display > 0) {
+  if (vAprim_display > 0.001) {
     text += `   • Bloque A se mueve hacia la DERECHA a ${Math.abs(vAprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
-  } else if (vAprim_display < 0) {
+  } else if (vAprim_display < -0.001) {
     text += `   • Bloque A se mueve hacia la IZQUIERDA a ${Math.abs(vAprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
   } else {
     text += `   • Bloque A se DETIENE inmediatamente después del choque\n`;
   }
   
-  if (vBprim_display > 0) {
+  if (vBprim_display > 0.001) {
     text += `   • Bloque B se mueve hacia la DERECHA a ${Math.abs(vBprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
-  } else if (vBprim_display < 0) {
+  } else if (vBprim_display < -0.001) {
     text += `   • Bloque B se mueve hacia la IZQUIERDA a ${Math.abs(vBprim_display).toFixed(3)} ${currentUnitSystem === 'SI' ? 'm/s' : 'mph'}\n`;
   } else {
     text += `   • Bloque B se DETIENE inmediatamente después del choque\n`;
@@ -855,8 +1143,8 @@ function calcular() {
     text += '   • Continuarán moviéndose indefinidamente\n';
   } else {
     text += `Para el bloque A (${currentUnitSystem === 'SI' ? 'metros' : 'pies'}):\n`;
-    if (vAprim === 0) {
-      text += `   • vA\' = 0 → el bloque A ya está detenido\n`;
+    if (Math.abs(vAprim) < 0.001) {
+      text += `   • vA\' ≈ 0 → el bloque A ya está detenido\n`;
       text += `   • Distancia dA = 0 ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
     } else {
       text += `   • dA = (${Math.abs(vAprim).toFixed(3)} m/s)² / (2·${mu}·${g.toFixed(3)} m/s²)\n`;
@@ -864,8 +1152,8 @@ function calcular() {
     }
     
     text += `\nPara el bloque B (${currentUnitSystem === 'SI' ? 'metros' : 'pies'}):\n`;
-    if (vBprim === 0) {
-      text += `   • vB\' = 0 → el bloque B ya está detenido\n`;
+    if (Math.abs(vBprim) < 0.001) {
+      text += `   • vB\' ≈ 0 → el bloque B ya está detenido\n`;
       text += `   • Distancia dB = 0 ${currentUnitSystem === 'SI' ? 'm' : 'ft'}\n`;
     } else {
       text += `   • dB = (${Math.abs(vBprim).toFixed(3)} m/s)² / (2·${mu}·${g.toFixed(3)} m/s²)\n`;
@@ -920,8 +1208,11 @@ function calcular() {
   
   out.textContent = text;
   
-  // Actualizar visualización final
-  updateFinalVisualization(vAprim, vBprim, dA, dB, vAprim, vBprim, dA, dB);
+  // Actualizar visualización final y flechas
+  updateFinalArrows(vAprim, vBprim, dA, dB);
+  
+  // Mostrar la visualización final
+  document.getElementById('finalVisualization').style.display = 'flex';
 }
 
 function ejemploProblema() {
@@ -986,7 +1277,34 @@ document.addEventListener('DOMContentLoaded', function() {
   // Actualizar visualización cuando cambian los valores
   const inputs = document.querySelectorAll('input[type="number"]');
   inputs.forEach(input => {
-    input.addEventListener('input', updateInitialVisualization);
+    input.addEventListener('input', function() {
+      updateInitialVisualization();
+      
+      // Actualizar velocidad relativa en tiempo real
+      const vA = parseFloat(document.getElementById('vA').value) || 0;
+      const vB = parseFloat(document.getElementById('vB').value) || 0;
+      let vRel = Math.abs(vA - vB);
+      
+      if (currentUnitSystem === 'ENGLISH') {
+        vRel = vRel / conversionFactors.velocity.ENGLISH;
+      }
+      
+      const vrelElement = document.getElementById('vis-vrel');
+      if (vrelElement) {
+        vrelElement.textContent = vRel.toFixed(2);
+        
+        // Actualizar flecha de conexión en tiempo real
+        const arrowLine = document.querySelector('.arrow-line');
+        const arrowHead = document.querySelector('.arrow-head');
+        
+        if (arrowLine && arrowHead) {
+          const lineWidth = Math.min(Math.max(vRel * 20, 50), 200);
+          arrowLine.style.width = `${lineWidth}px`;
+          arrowLine.style.backgroundColor = getSpeedColor(vRel);
+          arrowHead.style.borderLeftColor = getSpeedColor(vRel);
+        }
+      }
+    });
   });
 });
 </script>
